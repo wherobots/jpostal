@@ -1,11 +1,12 @@
+# TODO cache gradle and libpostal install
 name: Build this project with gradle
 
 on:
   push:
-
 jobs:
   build-gradle-project:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - platform: ubuntu-latest
