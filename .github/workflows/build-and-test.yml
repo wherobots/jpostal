@@ -1,9 +1,9 @@
 # TODO cache gradle and libpostal install
-name: Test and Build
+name: Build and Test
 on:
   push:
 jobs:
-  test-and-build:
+  build-and-test:
     strategy:
       fail-fast: false
       matrix:
@@ -18,18 +18,19 @@ jobs:
             jarSuffix: 'macos-aarch64'
     runs-on: ${{ matrix.platform }}
     steps:
-      # only intel mac needs homebrew for automake
       - name: Set up Homebrew
+        if: contains(matrix.platform, 'macos')
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'depot-macos-latest'
       - name: Install automake
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'depot-macos-latest'
+        if: contains(matrix.platform, 'macos')
         run: brew install curl autoconf automake libtool pkg-config
       - uses: actions/checkout@v4
         with:
           repository: openvenues/libpostal
           path: libpostal
+      - name: show instruction set
+        run: echo $(uname -m)
       - name: Install libtool
         run: |
           cd libpostal
@@ -39,7 +40,7 @@ jobs:
           sudo make -j4
           sudo make install
       - name: Run ldconfig
-        if: startsWith(matrix.platform, 'ubuntu')
+        if: contains(matrix.platform, 'ubuntu')
         run: sudo ldconfig
       - uses: actions/checkout@v4
         with:
