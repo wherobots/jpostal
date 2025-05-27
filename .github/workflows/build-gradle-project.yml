@@ -22,9 +22,9 @@ jobs:
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
-        if: matrix.platform == 'macos-latest'
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'depot-macos-latest'
       - name: Install automake
-        if: matrix.platform == 'macos-latest'
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'depot-macos-latest'
         run: brew install curl autoconf automake libtool pkg-config
       - uses: actions/checkout@v4
         with:
