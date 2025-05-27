@@ -1,10 +1,9 @@
 # TODO cache gradle and libpostal install
-name: Build this project with gradle
-
+name: Test and Build
 on:
   push:
 jobs:
-  build-gradle-project:
+  test-and-build:
     strategy:
       fail-fast: false
       matrix:
@@ -19,6 +18,14 @@ jobs:
             jarSuffix: 'macos-aarch64'
     runs-on: ${{ matrix.platform }}
     steps:
+      # only intel mac needs homebrew for automake
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+        if: matrix.platform == 'macos-latest'
+      - name: Install automake
+        if: matrix.platform == 'macos-latest'
+        run: brew install automake
       - uses: actions/checkout@v4
         with:
           repository: openvenues/libpostal
