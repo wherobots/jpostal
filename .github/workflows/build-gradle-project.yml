@@ -10,11 +10,11 @@ jobs:
         include:
           - platform: ubuntu-latest
             jarSuffix: 'linux-x86-64'
-          - platform: ubuntu-latest-arm64
+          - platform: depot-ubuntu-24.04-arm-small
             jarSuffix: 'linux-aarch64'
           - platform: macos-latest
             jarSuffix: 'macos-x86-64'
-          - platform: macos-latest-arm64
+          - platform: depot-macos-latest
             jarSuffix: 'macos-aarch64'
     runs-on: ${{ matrix.platform }}
     steps:
