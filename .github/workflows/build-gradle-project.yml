@@ -50,11 +50,6 @@ jobs:
         run: |
           cd jpostal
           ./gradlew assemble check
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: true
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
@@ -62,5 +57,5 @@ jobs:
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
-          name: jpostal-$VERSION-${{ matrix.jarSuffix }}
+          name: jpostal-${{ env.NAME }}-${{ matrix.jarSuffix }}
           path: jpostal/build/libs/jpostal*.jar
