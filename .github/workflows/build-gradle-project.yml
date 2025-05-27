@@ -38,7 +38,9 @@ jobs:
           ./configure --datadir=`pwd`/data_dir MODEL=senzing
           sudo make -j4
           sudo make install
-          sudo ldconfig
+      - name: Run ldconfig
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: sudo ldconfig
       - uses: actions/checkout@v4
         with:
           path: jpostal
