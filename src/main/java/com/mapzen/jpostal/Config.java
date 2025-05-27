@@ -94,22 +94,26 @@ public final class Config {
             }
             fullPathInJar = "/" + nativeLibFileName;
 
-            InputStream in = Config.class.getResourceAsStream(fullPathInJar);
-            if (in == null) {
-                throw new UnsatisfiedLinkError("Native library " + fullPathInJar + " not found in JAR.");
-            }
-
-            File tempFile = File.createTempFile("lib", nativeLibFileName.substring(nativeLibFileName.lastIndexOf('.')));
-            tempFile.deleteOnExit();
-
-            try (OutputStream out = new FileOutputStream(tempFile)) {
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
+            try (InputStream in = Config.class.getResourceAsStream(fullPathInJar)) {
+                if (in == null) {
+                    throw new UnsatisfiedLinkError("Native library " + fullPathInJar + " not found in JAR.");
                 }
-            } finally {
-                in.close();
+
+                File tempFile = File.createTempFile("lib", nativeLibFileName.substring(nativeLibFileName.lastIndexOf('.')));
+                tempFile.deleteOnExit();
+
+                try (OutputStream out = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                }
+
+                System.load(tempFile.getAbsolutePath());
+                libLoaded = true;
+            } catch (IOException e) {
+                throw new UnsatisfiedLinkError("Failed to load native library " + libraryName + ": " + e.getMessage());
             }
 
             System.load(tempFile.getAbsolutePath());
