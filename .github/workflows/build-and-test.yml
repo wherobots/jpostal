@@ -29,8 +29,6 @@ jobs:
         with:
           repository: openvenues/libpostal
           path: libpostal
-      - name: show instruction set
-        run: echo $(uname -m)
       - name: Install libtool
         run: |
           cd libpostal
