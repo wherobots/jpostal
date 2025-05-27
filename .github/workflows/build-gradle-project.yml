@@ -5,6 +5,17 @@ on:
 
 jobs:
   build-gradle-project:
+    strategy:
+      matrix:
+        include:
+          - platform: ubuntu-latest
+            jarSuffix: 'linux-x86-64'
+          - platform: ubuntu-latest-arm64
+            jarSuffix: 'linux-aarch64'
+          - platform: macos-latest
+            jarSuffix: 'macos-x86-64'
+          - platform: macos-latest-arm64
+            jarSuffix: 'macos-aarch64'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +40,11 @@ jobs:
         run: |
           cd jpostal
           ./gradlew assemble check
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: true
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
