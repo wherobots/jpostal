@@ -6,15 +6,14 @@ plugins {
     id 'application'
 }
 
+version = '1.0.0'
+
 repositories {
     mavenCentral()
 }
 
 sourceSets.main.java.srcDirs = ["src/main/java"]
 sourceSets.test.java.srcDirs = ["src/test/java"]
-
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
 
 model {
     platforms {
@@ -32,7 +31,7 @@ model {
     components {
         jpostal(NativeLibrarySpec) {
             binaries.all {
-                def jvmHome = org.gradle.internal.jvm.Jvm.current().javaHome
+                def jvmHome = Jvm.current().javaHome
                 if (targetPlatform.operatingSystem.macOsX) {
                     cCompiler.args '-I', "${jvmHome}/include"
                     cCompiler.args '-I', "${jvmHome}/include/darwin"
@@ -69,4 +68,10 @@ sourceSets {
 
 dependencies {
     testImplementation 'junit:junit:4.+'
+}
+
+jar {
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveClassifier.set("${System.getProperty('os.name').toLowerCase().replace(' ', '')}-${System.getProperty('os.arch')}")
 }
