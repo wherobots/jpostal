@@ -16,7 +16,7 @@ jobs:
             jarSuffix: 'macos-x86-64'
           - platform: macos-latest-arm64
             jarSuffix: 'macos-aarch64'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,6 +47,6 @@ jobs:
           detached: true
       - name: Upload jar
         uses: actions/upload-artifact@v4
-        with:
-          name: jpostal.jar
-          path: jpostal/build/libs/jpostal-linux-x86-64.jar
+        with: # todo add version to jar name
+          name: jpostal-${{ matrix.jarSuffix }}.jar
+          path: jpostal/build/libs/jpostal.jar
