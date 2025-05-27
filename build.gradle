@@ -28,6 +28,7 @@ model {
         }
     }
 
+    // TODO architecture specific configurations
     components {
         jpostal(NativeLibrarySpec) {
             binaries.all {
@@ -57,9 +58,16 @@ model {
 
 classes.dependsOn 'jpostalSharedLibrary'
 
-
-application {
-    applicationDefaultJvmArgs = ["-Djava.library.path=" + file("${buildDir}/libs/jpostal/shared").absolutePath]
+// Replacing lib path with resources
+processResources.dependsOn(':linkJpostalSharedLibrary')
+sourceSets {
+    main {
+        resources {
+            // Example: if native libs are built into 'build/libs/native'
+            // This is a simplified example; actual paths depend on native plugins
+            srcDir "$buildDir/libs/jpostal/shared"
+        }
+    }
 }
 
 
