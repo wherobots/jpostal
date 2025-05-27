@@ -22,11 +22,15 @@ jobs:
           sudo ldconfig
       - uses: actions/checkout@v4
         with:
-          repository: Qualytics/jpostal
           path: jpostal
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-      - name: Run build with Gradle Wrapper
+      - name: Run tests with Gradle Wrapper
         run: |
           cd jpostal
-          ./gradlew check
+          ./gradlew assemble check
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpostal.jar
+          path: jpostal/build/libs/jpostal-linux-x86-64.jar
