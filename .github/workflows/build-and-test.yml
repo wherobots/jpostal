@@ -1,4 +1,3 @@
-# TODO cache gradle and libpostal install
 name: Build and Test
 on:
   push:
@@ -18,12 +17,25 @@ jobs:
             jarSuffix: 'macos-aarch64'
     runs-on: ${{ matrix.platform }}
     steps:
+      # install and build libpostal
+      - name: Restore libpostal cache
+        id: libpostal-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            /usr/local/lib/libpostal*
+            /usr/local/include/libpostal
+            /usr/local/bin/libpostal*
+            /usr/local/share/libpostal
+            libpostal/data_dir
+          key: libpostal-cache-${{ matrix.platform }}-${{ hashFiles('libpostal/**/*.c', 'libpostal/**/*.h', 'libpostal/configure.ac') }}
+          restore-keys: libpostal-cache-${{ matrix.platform }}
       - name: Set up Homebrew
-        if: contains(matrix.platform, 'macos')
+        if: steps.libpostal-cache.outputs.cache-hit != 'true' && contains(matrix.platform, 'macos')
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
       - name: Install automake
-        if: contains(matrix.platform, 'macos')
+        if: steps.libpostal-cache.outputs.cache-hit != 'true' && contains(matrix.platform, 'macos')
         run: brew install curl autoconf automake libtool pkg-config
       - uses: actions/checkout@v4
         with:
@@ -31,6 +43,7 @@ jobs:
           ref: fix-aarch64
           path: libpostal
       - name: Install libpostal
+        if: steps.libpostal-cache.outputs.cache-hit != 'true'
         run: |
           cd libpostal
           ./bootstrap.sh
@@ -38,10 +51,19 @@ jobs:
           ./configure --datadir=`pwd`/data_dir MODEL=senzing
           sudo make -j4
           sudo make install
+
       - name: Run ldconfig
-        if: contains(matrix.platform, 'ubuntu')
+        if: contains(matrix.platform, 'ubuntu') && steps.libpostal-cache.outputs.cache-hit != 'true'
         run: sudo ldconfig
-      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17 # Java 16+ is required for jpostal
+
+      # install & build jpostal
+      - name: Checkout jpostal
+        uses: actions/checkout@v4
         with:
           path: jpostal
       - name: Setup Gradle
