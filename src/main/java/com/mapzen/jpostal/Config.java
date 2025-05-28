@@ -116,7 +116,7 @@ public final class Config {
 
         if (osArch.contains("arm64") || osArch.contains("aarch64")) {
             nativeLibArchName = "arm64";
-        } else if (osArch.contains("x64") || osArch.contains("amd64")) {
+        } else if (osArch.contains("x64") || osArch.contains("amd64") || osArch.contains("x86_64")) {
             nativeLibArchName = "x64";
         } else if (osArch.contains("32") || osArch.contains("86")) {
             nativeLibArchName = "x86";
@@ -128,7 +128,7 @@ public final class Config {
 
         try (InputStream in = Config.class.getResourceAsStream(fullPathInJar)) {
             if (in == null) {
-                throw new UnsatisfiedLinkError("Native library " + fullPathInJar + " not found in JAR. OS arch: " + osArch);
+                throw new UnsatisfiedLinkError("Native library " + fullPathInJar + " not found in JAR");
             }
 
             File tempFile = File.createTempFile("lib", nativeLibFileName.substring(nativeLibFileName.lastIndexOf('.')));
