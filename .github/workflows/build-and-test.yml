@@ -24,7 +24,7 @@ jobs:
         with:
           path: |
             ~/libpostal-install
-            libpostal/data_dir
+            $HOME/libpostal/data_dir
           key: libpostal-cache-${{ matrix.platform }}-${{ hashFiles('libpostal/**/*.c', 'libpostal/**/*.h', 'libpostal/configure.ac') }}
           restore-keys: libpostal-cache-${{ matrix.platform }}
       - name: Set up Homebrew
