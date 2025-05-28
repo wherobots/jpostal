@@ -17,17 +17,13 @@ sourceSets.test.java.srcDirs = ["src/test/java"]
 
 model {
     platforms {
-        linux_aarch64 {
-            architecture "arm64"
-            operatingSystem "linux"
-        }
         osx_aarch64 {
             architecture "arm64"
             operatingSystem "mac os x"
         }
+        linux_aarch64 -> platform("linux_arm64")
     }
 
-    // TODO architecture specific configurations
     components {
         jpostal(NativeLibrarySpec) {
             binaries.all {
