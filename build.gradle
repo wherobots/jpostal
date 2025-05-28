@@ -35,6 +35,25 @@ model {
 
     components {
         jpostal(NativeLibrarySpec) {
+            binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+            binaries.withType(SharedLibraryBinarySpec) {
+
+                def operatingSystem = targetPlatform.operatingSystem.macOsX ? 'darwin' :
+                        targetPlatform.operatingSystem.linux ? 'linux' :
+                                targetPlatform.operatingSystem.windows ? 'windows' :
+                                        targetPlatform.operatingSystem.freeBSD ? 'freebsd' : null
+
+                def architecture = targetPlatform.architecture.arm64 ? 'arm64' :
+                        targetPlatform.architecture.x86_64 ? 'x64' :
+                                targetPlatform.architecture.x86 ? 'x86' :null
+
+                def extension = targetPlatform.operatingSystem.macOsX ? 'dylib' :
+                        targetPlatform.operatingSystem.linux ? 'so' :
+                                targetPlatform.operatingSystem.windows ? 'dll' :
+                                        targetPlatform.operatingSystem.freeBSD ? 'so' : null
+                sharedLibraryFile = file("${buildDir}/libs/jpostal/${operatingSystem}-${architecture}/libjpostal.${extension}")
+            }
+
             binaries.all {
                 def jvmHome = Jvm.current().javaHome
                 if (targetPlatform.operatingSystem.macOsX) {
@@ -72,7 +91,8 @@ processResources.dependsOn(':linkJpostalSharedLibrary')
 sourceSets {
     main {
         resources {
-            srcDir "$buildDir/libs/jpostal/shared"
+            srcDir "$buildDir/libs/jpostal/"
+            exclude "shared"
         }
     }
 }

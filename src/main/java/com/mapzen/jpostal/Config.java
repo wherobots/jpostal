@@ -91,19 +91,40 @@ public final class Config {
         }
 
         String osName = System.getProperty("os.name").toLowerCase();
+        String osArch = System.getProperty("os.arch").toLowerCase();
+
+        String nativeLibOSName;
+        String nativeLibArchName;
         String nativeLibFileName;
         String fullPathInJar;
 
-        // TODO handle architecture
         if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+            nativeLibOSName = "linux";
             nativeLibFileName = "lib" + libraryName + ".so";
-        } else if (osName.contains("mac")) {
+        } else if (osName.contains("freebsd")) {
+            nativeLibOSName = "freebsd";
+            nativeLibFileName = "lib" + libraryName + ".so";
+        } else if (osName.contains("mac") || osName.contains("darwin")) {
+            nativeLibOSName = "darwin";
             nativeLibFileName = "lib" + libraryName + ".dylib";
+        } else if (osName.contains("win")) {
+            nativeLibOSName = "windows";
+            nativeLibFileName = libraryName + ".dll";
         } else {
             throw new UnsupportedOperationException("Unsupported OS: " + osName);
         }
 
-        fullPathInJar = "/" + nativeLibFileName;
+        if (osArch.contains("arm64") || osArch.contains("aarch64")) {
+            nativeLibArchName = "arm64";
+        } else if (osArch.contains("x64") || osArch.contains("amd64")) {
+            nativeLibArchName = "x64";
+        } else if (osArch.contains("32") || osArch.contains("86")) {
+            nativeLibArchName = "x86";
+        } else {
+            throw new UnsupportedOperationException("Unsupported architecture: " + osArch);
+        }
+
+        fullPathInJar = "/" + nativeLibOSName + "-" + nativeLibArchName + "/" + nativeLibFileName;
 
         try (InputStream in = Config.class.getResourceAsStream(fullPathInJar)) {
             if (in == null) {

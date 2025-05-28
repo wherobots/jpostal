@@ -18,21 +18,12 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       # install and build libpostal
-      - name: Restore libpostal cache
-        id: libpostal-cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/libpostal-install
-            $HOME/libpostal/data_dir
-          key: libpostal-cache-${{ matrix.platform }}-${{ hashFiles('libpostal/**/*.c', 'libpostal/**/*.h', 'libpostal/configure.ac') }}
-          restore-keys: libpostal-cache-${{ matrix.platform }}
       - name: Set up Homebrew
-        if: steps.libpostal-cache.outputs.cache-hit != 'true' && contains(matrix.platform, 'macos')
+        if: contains(matrix.platform, 'macos')
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
       - name: Install automake
-        if: steps.libpostal-cache.outputs.cache-hit != 'true' && contains(matrix.platform, 'macos')
+        if: contains(matrix.platform, 'macos')
         run: brew install curl autoconf automake libtool pkg-config
       - uses: actions/checkout@v4
         with:
@@ -40,17 +31,16 @@ jobs:
           ref: fix-aarch64
           path: libpostal
       - name: Install libpostal
-        if: steps.libpostal-cache.outputs.cache-hit != 'true'
         run: |
           cd libpostal
           ./bootstrap.sh
           mkdir -p data_dir
-          ./configure --datadir=`pwd`/data_dir --prefix=$HOME/libpostal-install MODEL=senzing
+          ./configure --datadir=`pwd`/data_dir MODEL=senzing
           make -j4
           make install
 
       - name: Run ldconfig
-        if: contains(matrix.platform, 'ubuntu') && steps.libpostal-cache.outputs.cache-hit != 'true'
+        if: contains(matrix.platform, 'ubuntu')
         run: sudo ldconfig
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -69,12 +59,12 @@ jobs:
         run: |
           cd jpostal
           export LD_LIBRARY_PATH=$HOME/libpostal-install/lib:$LD_LIBRARY_PATH
-          ./gradlew assemble check -Plibpostal.dir=$HOME/libpostal-install
+          ./gradlew assemble check
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - name: Upload jar
+      - name: Upload jar # TODO upload only lib
         uses: actions/upload-artifact@v4
         with:
           name: jpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
