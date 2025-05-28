@@ -128,7 +128,7 @@ public final class Config {
 
         try (InputStream in = Config.class.getResourceAsStream(fullPathInJar)) {
             if (in == null) {
-                throw new UnsatisfiedLinkError("Native library " + fullPathInJar + " not found in JAR.");
+                throw new UnsatisfiedLinkError("Native library " + fullPathInJar + " not found in JAR. OS arch: " + osArch);
             }
 
             File tempFile = File.createTempFile("lib", nativeLibFileName.substring(nativeLibFileName.lastIndexOf('.')));
