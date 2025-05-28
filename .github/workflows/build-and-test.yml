@@ -11,7 +11,7 @@ jobs:
             systemIdentifier: 'linux-x64'
           - platform: depot-ubuntu-24.04-arm
             systemIdentifier: 'linux-arm64'
-          - platform: macos-latest
+          - platform: macos-13 # last macOS version with x86_64 support
             systemIdentifier: 'darwin-x64'
           - platform: depot-macos-latest
             systemIdentifier: 'darwin-arm64'
@@ -99,10 +99,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: jpostal
+      - name: Get jpostal Version from Gradle
+        run: |
+          VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Download libs
         uses: actions/download-artifact@v4
         with:
           path: ./jpostal/otherResources
+      - name: Flatten Native Lib Files
+        run: |
+          mv ./jpostal-${{ env.Version }}-*/** .
+          rm -r jpostal-${{ env.Version }}-*
       - name: Build multiplatform jar
         run: |
           cd jpostal

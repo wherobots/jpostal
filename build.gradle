@@ -15,16 +15,8 @@ repositories {
 sourceSets.main.java.srcDirs = ["src/main/java"]
 sourceSets.test.java.srcDirs = ["src/test/java"]
 
-def libpostalDir = project.hasProperty('libpostal.dir') ? project.property('libpostal.dir') : null
-
 model {
     toolChains {
-        clang(Clang) {
-            target("linux_aarch64") {
-                cCompiler.executable = "aarch64-linux-gnu-gcc"
-                linker.executable = "aarch64-linux-gnu-gcc"
-            }
-        }
         gcc(Gcc) {
             target("linux_aarch64") {
                 cCompiler.executable = "aarch64-linux-gnu-gcc"
@@ -72,11 +64,6 @@ model {
                 } else if (targetPlatform.operatingSystem.freeBSD) {
                     cCompiler.args '-I', "${jvmHome}/include"
                     cCompiler.args '-I', "${jvmHome}/include/freebsd"
-                }
-
-                if (libpostalDir != null) { // handle custom libpostal directory
-                    cCompiler.args '-I', "${libpostalDir}/include"
-                    linker.args '-L', "${libpostalDir}/lib"
                 }
 
                 linker.args '-lpostal'  // Link with libpostal
