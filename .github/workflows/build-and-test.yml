@@ -64,8 +64,10 @@ jobs:
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - name: Upload jar # TODO upload only lib
+      # upload artifacts
+      - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
           name: jpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
-          path: jpostal/build/libs/jpostal*.jar
+          path: jpostal/build/libs/jpostal/**
+

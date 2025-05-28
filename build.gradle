@@ -44,8 +44,8 @@ model {
                                         targetPlatform.operatingSystem.freeBSD ? 'freebsd' : null
 
                 def architecture = targetPlatform.architecture.arm64 ? 'arm64' :
-                        targetPlatform.architecture.x86_64 ? 'x64' :
-                                targetPlatform.architecture.x86 ? 'x86' :null
+                        targetPlatform.architecture.amd64 ? 'x64' :
+                                targetPlatform.architecture.x86 ? 'x86' : null
 
                 def extension = targetPlatform.operatingSystem.macOsX ? 'dylib' :
                         targetPlatform.operatingSystem.linux ? 'so' :
@@ -93,6 +93,7 @@ sourceSets {
         resources {
             srcDir "$buildDir/libs/jpostal/"
             exclude "shared"
+            srcDir "otherResources" // For including native libraries built by other means
         }
     }
 }
