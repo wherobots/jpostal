@@ -15,7 +15,7 @@ repositories {
 sourceSets.main.java.srcDirs = ["src/main/java"]
 sourceSets.test.java.srcDirs = ["src/test/java"]
 
-def jpostalDir = project.hasProperty('jpostal.dir') ? project.property('jpostal.dir') : null
+def libpostalDir = project.hasProperty('libpostal.dir') ? project.property('libpostal.dir') : null
 
 model {
     toolChains {
@@ -55,9 +55,9 @@ model {
                     cCompiler.args '-I', "${jvmHome}/include/freebsd"
                 }
 
-                if (jpostalDir != null) {
-                    cCompiler.args '-I', "${jpostalDir}/include"
-                    linker.args '-L', "${jpostalDir}/lib"
+                if (libpostalDir != null) { // handle custom libpostal directory
+                    cCompiler.args '-I', "${libpostalDir}/include"
+                    linker.args '-L', "${libpostalDir}/lib"
                 }
 
                 linker.args '-lpostal'  // Link with libpostal
