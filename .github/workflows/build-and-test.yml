@@ -58,7 +58,7 @@ jobs:
       - name: Run tests with Gradle Wrapper
         run: |
           cd jpostal
-          ./gradlew assemble check
+          ./gradlew assemble check --info
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
