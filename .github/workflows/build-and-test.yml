@@ -71,9 +71,30 @@ jobs:
           path: jpostal/build/libs/jpostal/**
 
   build-multiplatform-jar:
+
     runs-on: ubuntu-latest
     needs: build-and-test
     steps:
+      # install and build libpostal
+      - uses: actions/checkout@v4
+        with:
+          repository: james-willis/libpostal
+          ref: fix-aarch64
+          path: libpostal
+      - name: Install libtool
+        run: |
+          cd libpostal
+          ./bootstrap.sh
+          mkdir data_dir
+          ./configure --datadir=`pwd`/data_dir MODEL=senzing
+          sudo make -j4
+          sudo make install
+          sudo ldconfig
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17 # Java 16+ is required for jpostal
       - name: Checkout jpostal
         uses: actions/checkout@v4
         with:

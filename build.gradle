@@ -91,9 +91,11 @@ processResources.dependsOn(':linkJpostalSharedLibrary')
 sourceSets {
     main {
         resources {
+            srcDir "otherResources" // For including native libraries built by other means
             srcDir "$buildDir/libs/jpostal/"
             exclude "shared"
-            srcDir "otherResources" // For including native libraries built by other means
+            // Prefer contents of otherResources over "$buildDir/libs/jpostal/"
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
     }
 }
