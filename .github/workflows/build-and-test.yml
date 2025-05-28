@@ -74,8 +74,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     steps:
-      - name: Checkout
+      - name: Checkout jpostal
         uses: actions/checkout@v4
+        with:
+          path: jpostal
       - name: Download libs
         uses: actions/download-artifact@v4
         with:
