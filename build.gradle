@@ -17,6 +17,7 @@ sourceSets.test.java.srcDirs = ["src/test/java"]
 
 model {
     toolChains {
+        clang(Clang) // Needed for macOS
         gcc(Gcc) {
             target("linux_aarch64") {
                 cCompiler.executable = "aarch64-linux-gnu-gcc"
