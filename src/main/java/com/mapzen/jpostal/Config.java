@@ -1,6 +1,10 @@
 package com.mapzen.jpostal;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
 public final class Config {
@@ -26,8 +30,13 @@ public final class Config {
         if (this.libraryFile != null) {
             System.load(this.libraryFile);
         } else {
-            loadLibraryFromJar("jpostal");
+            try {
+                System.loadLibrary("jpostal");
+            } catch (UnsatisfiedLinkError ex) {
+                loadLibraryFromJar("jpostal");
+            }
         }
+        libLoaded = true;
     }
 
     static IllegalArgumentException mismatchException(final Config current, final Config requested) {
@@ -84,6 +93,8 @@ public final class Config {
         String osName = System.getProperty("os.name").toLowerCase();
         String nativeLibFileName;
         String fullPathInJar;
+
+        // TODO handle architecture
         if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
             nativeLibFileName = "lib" + libraryName + ".so";
         } else if (osName.contains("mac")) {
@@ -91,6 +102,7 @@ public final class Config {
         } else {
             throw new UnsupportedOperationException("Unsupported OS: " + osName);
         }
+
         fullPathInJar = "/" + nativeLibFileName;
 
         try (InputStream in = Config.class.getResourceAsStream(fullPathInJar)) {
@@ -100,15 +112,7 @@ public final class Config {
 
             File tempFile = File.createTempFile("lib", nativeLibFileName.substring(nativeLibFileName.lastIndexOf('.')));
             tempFile.deleteOnExit();
-
-            try (OutputStream out = new FileOutputStream(tempFile)) {
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
-                }
-            }
-
+            Files.copy(in, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             System.load(tempFile.getAbsolutePath());
             libLoaded = true;
         } catch (IOException e) {

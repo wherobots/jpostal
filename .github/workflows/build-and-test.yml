@@ -30,7 +30,7 @@ jobs:
           repository: james-willis/libpostal
           ref: fix-aarch64
           path: libpostal
-      - name: Install libtool
+      - name: Install libpostal
         run: |
           cd libpostal
           ./bootstrap.sh
