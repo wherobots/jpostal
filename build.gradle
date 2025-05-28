@@ -88,14 +88,15 @@ model {
 classes.dependsOn 'jpostalSharedLibrary'
 
 processResources.dependsOn(':linkJpostalSharedLibrary')
+processResources.duplicatesStrategy DuplicatesStrategy.EXCLUDE
+
 sourceSets {
     main {
         resources {
+            // Prefer contents of otherResources over "$buildDir/libs/jpostal/"
             srcDir "otherResources" // For including native libraries built by other means
             srcDir "$buildDir/libs/jpostal/"
             exclude "shared"
-            // Prefer contents of otherResources over "$buildDir/libs/jpostal/"
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
     }
 }
