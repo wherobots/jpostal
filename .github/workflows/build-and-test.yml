@@ -8,13 +8,13 @@ jobs:
       matrix:
         include:
           - platform: ubuntu-latest
-            jarSuffix: 'linux-x86-64'
-          - platform: depot-ubuntu-24.04-arm-small
-            jarSuffix: 'linux-aarch64'
+            systemIdentifier: 'linux-x64'
+          - platform: depot-ubuntu-24.04-arm
+            systemIdentifier: 'linux-arm64'
           - platform: macos-latest
-            jarSuffix: 'macos-x86-64'
+            systemIdentifier: 'darwin-x64'
           - platform: depot-macos-latest
-            jarSuffix: 'macos-aarch64'
+            systemIdentifier: 'darwin-arm64'
     runs-on: ${{ matrix.platform }}
     steps:
       # install and build libpostal
@@ -79,5 +79,5 @@ jobs:
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
-          name: jpostal-${{ env.VERSION }}-${{ matrix.jarSuffix }}
+          name: jpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
           path: jpostal/build/libs/jpostal*.jar
