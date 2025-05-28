@@ -23,10 +23,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            /usr/local/lib/libpostal*
-            /usr/local/include/libpostal
-            /usr/local/bin/libpostal*
-            /usr/local/share/libpostal
+            ~/libpostal-install
             libpostal/data_dir
           key: libpostal-cache-${{ matrix.platform }}-${{ hashFiles('libpostal/**/*.c', 'libpostal/**/*.h', 'libpostal/configure.ac') }}
           restore-keys: libpostal-cache-${{ matrix.platform }}
@@ -47,10 +44,10 @@ jobs:
         run: |
           cd libpostal
           ./bootstrap.sh
-          mkdir data_dir
-          ./configure --datadir=`pwd`/data_dir MODEL=senzing
-          sudo make -j4
-          sudo make install
+          mkdir -p data_dir
+          ./configure --datadir=`pwd`/data_dir --prefix=$HOME/libpostal-install MODEL=senzing
+          make -j4
+          make install
 
       - name: Run ldconfig
         if: contains(matrix.platform, 'ubuntu') && steps.libpostal-cache.outputs.cache-hit != 'true'
@@ -71,7 +68,7 @@ jobs:
       - name: Run tests with Gradle Wrapper
         run: |
           cd jpostal
-          ./gradlew assemble check
+          ./gradlew assemble check -Pjpostal.dir=$HOME/libpostal-install
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
