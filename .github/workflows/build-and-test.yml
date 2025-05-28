@@ -58,16 +58,33 @@ jobs:
       - name: Run tests with Gradle Wrapper
         run: |
           cd jpostal
-          export LD_LIBRARY_PATH=$HOME/libpostal-install/lib:$LD_LIBRARY_PATH
           ./gradlew assemble check
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
       # upload artifacts
-      - name: Upload jar
+      - name: Upload native code
         uses: actions/upload-artifact@v4
         with:
           name: jpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
           path: jpostal/build/libs/jpostal/**
 
+  build-multiplatform-jar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download libs
+        uses: actions/download-artifact@v4
+        with:
+          path: ./jpostal/otherResources
+      - name: Build multiplatform jar
+        run: |
+          cd jpostal
+          ./gradlew jar
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpostal-${{ env.VERSION }}-all
+          path: jpostal/build/libs/jpostal-*.jar
