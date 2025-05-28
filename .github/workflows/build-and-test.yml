@@ -68,6 +68,7 @@ jobs:
       - name: Run tests with Gradle Wrapper
         run: |
           cd jpostal
+          export LD_LIBRARY_PATH=$HOME/libpostal-install/lib:$LD_LIBRARY_PATH
           ./gradlew assemble check -Pjpostal.dir=$HOME/libpostal-install
       - name: Get jpostal Version from Gradle
         run: |
