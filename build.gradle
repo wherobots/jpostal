@@ -16,18 +16,21 @@ sourceSets.main.java.srcDirs = ["src/main/java"]
 sourceSets.test.java.srcDirs = ["src/test/java"]
 
 model {
-    platforms {
-        linux_aarch64 {
-            architecture "arm64"
-            operatingSystem "linux"
+    toolChains {
+        clang(Clang) {
+            target("linux_aarch64") {
+                cCompiler.executable = "aarch64-linux-gnu-gcc"
+                linker.executable = "aarch64-linux-gnu-gcc"
+            }
         }
-        osx_aarch64 {
-            architecture "arm64"
-            operatingSystem "mac os x"
+        gcc(Gcc) {
+            target("linux_aarch64") {
+                cCompiler.executable = "aarch64-linux-gnu-gcc"
+                linker.executable = "aarch64-linux-gnu-gcc"
+            }
         }
     }
 
-    // TODO architecture specific configurations
     components {
         jpostal(NativeLibrarySpec) {
             binaries.all {
