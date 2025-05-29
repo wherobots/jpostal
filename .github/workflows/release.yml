@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-jar:
+    uses: wherobots/jpostal/.github/workflows/build-and-test.yml@master
+
+  publish:
+    needs: build-jar
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: james-willis/libpostal
+          ref: fix-aarch64
+          path: libpostal
+      - name: Install libtool
+        run: |
+          cd libpostal
+          ./bootstrap.sh
+          mkdir data_dir
+          ./configure --datadir=`pwd`/data_dir MODEL=senzing
+          sudo make -j4
+          sudo make install
+          sudo ldconfig
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17 # Java 16+ is required for jpostal
+      - name: Checkout jpostal
+        uses: actions/checkout@v4
+        with:
+          path: jpostal
+      - name: Get jpostal Version from Gradle
+        run: |
+          VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Download libs
+        uses: actions/download-artifact@v4
+        with:
+          path: ./jpostal/otherResources
+      - name: Flatten Native Lib Files
+        run: |
+          cd jpostal/otherResources
+          mv ./jpostal-${{ env.VERSION }}-*/** .
+          rm -r jpostal-${{ env.VERSION }}-*
+      - name: Build multiplatform jar
+        run: |
+          cd jpostal
+          ./gradlew publish
+        env:
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GH_PKG_WRITE_TOKEN }}
