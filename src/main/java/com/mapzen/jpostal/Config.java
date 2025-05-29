@@ -1,8 +1,15 @@
 package com.mapzen.jpostal;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
 public final class Config {
+    private static boolean libLoaded = false;
+
     private final String dataDir;
     private final String libraryFile;
 
@@ -23,8 +30,13 @@ public final class Config {
         if (this.libraryFile != null) {
             System.load(this.libraryFile);
         } else {
-            System.loadLibrary("jpostal");
+            try {
+                System.loadLibrary("jpostal");
+            } catch (UnsatisfiedLinkError ex) {
+                loadLibraryFromJar("jpostal");
+            }
         }
+        libLoaded = true;
     }
 
     static IllegalArgumentException mismatchException(final Config current, final Config requested) {
@@ -70,6 +82,62 @@ public final class Config {
         public Builder libraryFile(final String libraryFile) {
             this.libraryFile = libraryFile;
             return this;
+        }
+    }
+
+    public static synchronized void loadLibraryFromJar(String libraryName) {
+        if (libLoaded) {
+            return;
+        }
+
+        String osName = System.getProperty("os.name").toLowerCase();
+        String osArch = System.getProperty("os.arch").toLowerCase();
+
+        String nativeLibOSName;
+        String nativeLibArchName;
+        String nativeLibFileName;
+        String fullPathInJar;
+
+        if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+            nativeLibOSName = "linux";
+            nativeLibFileName = "lib" + libraryName + ".so";
+        } else if (osName.contains("freebsd")) {
+            nativeLibOSName = "freebsd";
+            nativeLibFileName = "lib" + libraryName + ".so";
+        } else if (osName.contains("mac") || osName.contains("darwin")) {
+            nativeLibOSName = "darwin";
+            nativeLibFileName = "lib" + libraryName + ".dylib";
+        } else if (osName.contains("win")) {
+            nativeLibOSName = "windows";
+            nativeLibFileName = libraryName + ".dll";
+        } else {
+            throw new UnsupportedOperationException("Unsupported OS: " + osName);
+        }
+
+        if (osArch.contains("arm64") || osArch.contains("aarch64")) {
+            nativeLibArchName = "arm64";
+        } else if (osArch.contains("x64") || osArch.contains("amd64") || osArch.contains("x86_64")) {
+            nativeLibArchName = "x64";
+        } else if (osArch.contains("32") || osArch.contains("86")) {
+            nativeLibArchName = "x86";
+        } else {
+            throw new UnsupportedOperationException("Unsupported architecture: " + osArch);
+        }
+
+        fullPathInJar = "/" + nativeLibOSName + "-" + nativeLibArchName + "/" + nativeLibFileName;
+
+        try (InputStream in = Config.class.getResourceAsStream(fullPathInJar)) {
+            if (in == null) {
+                throw new UnsatisfiedLinkError("Native library " + fullPathInJar + " not found in JAR");
+            }
+
+            File tempFile = File.createTempFile("lib", nativeLibFileName.substring(nativeLibFileName.lastIndexOf('.')));
+            tempFile.deleteOnExit();
+            Files.copy(in, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            System.load(tempFile.getAbsolutePath());
+            libLoaded = true;
+        } catch (IOException e) {
+            throw new UnsatisfiedLinkError("Failed to load native library " + libraryName + ": " + e.getMessage());
         }
     }
 }

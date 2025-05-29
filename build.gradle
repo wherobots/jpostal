@@ -6,6 +6,8 @@ plugins {
     id 'application'
 }
 
+version = '1.0.0'
+
 repositories {
     mavenCentral()
 }
@@ -13,25 +15,40 @@ repositories {
 sourceSets.main.java.srcDirs = ["src/main/java"]
 sourceSets.test.java.srcDirs = ["src/test/java"]
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
-
 model {
-    platforms {
-        linux_aarch64 {
-            architecture "arm64"
-            operatingSystem "linux"
-        }
-        osx_aarch64 {
-            architecture "arm64"
-            operatingSystem "mac os x"
+    toolChains {
+        clang(Clang) // Needed for macOS
+        gcc(Gcc) {
+            target("linux_aarch64") {
+                cCompiler.executable = "aarch64-linux-gnu-gcc"
+                linker.executable = "aarch64-linux-gnu-gcc"
+            }
         }
     }
 
     components {
         jpostal(NativeLibrarySpec) {
+            binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+            binaries.withType(SharedLibraryBinarySpec) {
+
+                def operatingSystem = targetPlatform.operatingSystem.macOsX ? 'darwin' :
+                        targetPlatform.operatingSystem.linux ? 'linux' :
+                                targetPlatform.operatingSystem.windows ? 'windows' :
+                                        targetPlatform.operatingSystem.freeBSD ? 'freebsd' : null
+
+                def architecture = targetPlatform.architecture.arm64 ? 'arm64' :
+                        targetPlatform.architecture.amd64 ? 'x64' :
+                                targetPlatform.architecture.x86 ? 'x86' : null
+
+                def extension = targetPlatform.operatingSystem.macOsX ? 'dylib' :
+                        targetPlatform.operatingSystem.linux ? 'so' :
+                                targetPlatform.operatingSystem.windows ? 'dll' :
+                                        targetPlatform.operatingSystem.freeBSD ? 'so' : null
+                sharedLibraryFile = file("${buildDir}/libs/jpostal/${operatingSystem}-${architecture}/libjpostal.${extension}")
+            }
+
             binaries.all {
-                def jvmHome = org.gradle.internal.jvm.Jvm.current().javaHome
+                def jvmHome = Jvm.current().javaHome
                 if (targetPlatform.operatingSystem.macOsX) {
                     cCompiler.args '-I', "${jvmHome}/include"
                     cCompiler.args '-I', "${jvmHome}/include/darwin"
@@ -49,6 +66,7 @@ model {
                     cCompiler.args '-I', "${jvmHome}/include"
                     cCompiler.args '-I', "${jvmHome}/include/freebsd"
                 }
+
                 linker.args '-lpostal'  // Link with libpostal
             }
         }
@@ -57,16 +75,25 @@ model {
 
 classes.dependsOn 'jpostalSharedLibrary'
 
+processResources.dependsOn(':linkJpostalSharedLibrary')
+processResources.duplicatesStrategy DuplicatesStrategy.EXCLUDE
 
-application {
-    applicationDefaultJvmArgs = ["-Djava.library.path=" + file("${buildDir}/libs/jpostal/shared").absolutePath]
+sourceSets {
+    main {
+        resources {
+            // Prefer contents of otherResources over "$buildDir/libs/jpostal/"
+            srcDir "otherResources" // For including native libraries built by other means
+            srcDir "$buildDir/libs/jpostal/"
+            exclude "shared"
+        }
+    }
 }
-
 
 dependencies {
     testImplementation 'junit:junit:4.+'
 }
 
-tasks.withType(Test) {
-    systemProperty "java.library.path", file("${buildDir}/libs/jpostal/shared").absolutePath
+jar {
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
 }

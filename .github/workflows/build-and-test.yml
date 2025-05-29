@@ -1,0 +1,123 @@
+name: Build and Test
+on:
+  push:
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-latest
+            systemIdentifier: 'linux-x64'
+          - platform: depot-ubuntu-24.04-arm
+            systemIdentifier: 'linux-arm64'
+          - platform: macos-13 # last macOS version with x86_64 support
+            systemIdentifier: 'darwin-x64'
+          - platform: depot-macos-latest
+            systemIdentifier: 'darwin-arm64'
+    runs-on: ${{ matrix.platform }}
+    steps:
+      # install and build libpostal
+      - name: Set up Homebrew
+        if: contains(matrix.platform, 'macos')
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: Install automake
+        if: contains(matrix.platform, 'macos')
+        run: brew install curl autoconf automake libtool pkg-config
+      - uses: actions/checkout@v4
+        with:
+          repository: james-willis/libpostal
+          ref: fix-aarch64
+          path: libpostal
+      - name: Install libtool
+        run: |
+          cd libpostal
+          ./bootstrap.sh
+          mkdir data_dir
+          ./configure --datadir=`pwd`/data_dir MODEL=senzing
+          sudo make -j4
+          sudo make install
+
+      - name: Run ldconfig
+        if: contains(matrix.platform, 'ubuntu')
+        run: sudo ldconfig
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17 # Java 16+ is required for jpostal
+
+      # install & build jpostal
+      - name: Checkout jpostal
+        uses: actions/checkout@v4
+        with:
+          path: jpostal
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Run tests with Gradle Wrapper
+        run: |
+          cd jpostal
+          ./gradlew assemble check --info
+      - name: Get jpostal Version from Gradle
+        run: |
+          VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      # upload artifacts
+      - name: Upload native code
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
+          path: jpostal/build/libs/jpostal/**
+
+  build-multiplatform-jar:
+
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      # install and build libpostal
+      - uses: actions/checkout@v4
+        with:
+          repository: james-willis/libpostal
+          ref: fix-aarch64
+          path: libpostal
+      - name: Install libtool
+        run: |
+          cd libpostal
+          ./bootstrap.sh
+          mkdir data_dir
+          ./configure --datadir=`pwd`/data_dir MODEL=senzing
+          sudo make -j4
+          sudo make install
+          sudo ldconfig
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17 # Java 16+ is required for jpostal
+      - name: Checkout jpostal
+        uses: actions/checkout@v4
+        with:
+          path: jpostal
+      - name: Get jpostal Version from Gradle
+        run: |
+          VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Download libs
+        uses: actions/download-artifact@v4
+        with:
+          path: ./jpostal/otherResources
+      - name: Flatten Native Lib Files
+        run: |
+          cd jpostal/otherResources
+          mv ./jpostal-${{ env.VERSION }}-*/** .
+          rm -r jpostal-${{ env.VERSION }}-*
+      - name: Build multiplatform jar
+        run: |
+          cd jpostal
+          ./gradlew jar
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: jpostal-${{ env.VERSION }}-all
+          path: jpostal/build/libs/jpostal-*.jar
