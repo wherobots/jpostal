@@ -5,7 +5,9 @@ on:
 
 jobs:
   build-jar:
-    uses: wherobots/jpostal/.github/workflows/build-and-test.yml@master
+#    uses: wherobots/jpostal/.github/workflows/build-and-test.yml@master
+    # TODO undo
+    uses: wherobots/jpostal/.github/workflows/build-and-test.yml@release-testing
 
   publish:
     needs: build-jar
