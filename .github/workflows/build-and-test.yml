@@ -110,8 +110,8 @@ jobs:
       - name: Flatten Native Lib Files
         run: |
           cd jpostal/otherResources
-          mv ./jpostal-${{ env.Version }}-*/** .
-          rm -r jpostal-${{ env.Version }}-*
+          mv ./jpostal-${{ env.VERSION }}-*/** .
+          rm -r jpostal-${{ env.VERSION }}-*
       - name: Build multiplatform jar
         run: |
           cd jpostal
