@@ -6,7 +6,6 @@ on:
 jobs:
   build-jar:
     uses: wherobots/jpostal/.github/workflows/build-and-test.yml@master
-
   publish:
     needs: build-jar
     runs-on: ubuntu-latest
