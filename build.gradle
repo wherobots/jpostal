@@ -108,7 +108,7 @@ java {
     withSourcesJar()
 }
 sourcesJar.dependsOn(':linkJpostalSharedLibrary')
-
+sourcesJar.duplicatesStrategy DuplicatesStrategy.EXCLUDE
 
 // Configure publishing
 publishing {
