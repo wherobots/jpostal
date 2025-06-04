@@ -65,6 +65,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Run tests with Gradle Wrapper
         run: |
+          cp libpostal/${{ matrix.systemIdentifier }}/libpostal.* jpostal/otherResources/
           cd jpostal
           ./gradlew assemble check --info
       - name: Get jpostal Version from Gradle
