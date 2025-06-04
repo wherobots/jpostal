@@ -32,7 +32,7 @@ jobs:
           repository: james-willis/libpostal
           ref: fix-aarch64
           path: libpostal
-      - name: Install libtool
+      - name: Install libpostal
         run: |
           cd libpostal
           ./bootstrap.sh
@@ -40,7 +40,12 @@ jobs:
           ./configure --datadir=`pwd`/data_dir MODEL=senzing
           sudo make -j4
           sudo make install
-
+          cp src/.libs/libpostal.*  ${{ matrix.systemIdentifier }}/
+      - name: Upload libpostal artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
+          path: libpostal/${{ matrix.systemIdentifier }}/**
       - name: Run ldconfig
         if: contains(matrix.platform, 'ubuntu')
         run: sudo ldconfig
