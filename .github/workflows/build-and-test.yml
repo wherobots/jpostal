@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       # install and build libpostal
-      # TODO replace builds with prebuilt binaries
+      # TODO replace builds with prebuilt libpostal binaries
       - name: Set up Homebrew
         if: contains(matrix.platform, 'macos')
         id: set-up-homebrew
@@ -71,7 +71,7 @@ jobs:
           fi
           cd jpostal
           ./gradlew assemble check --info
-          cp build/libs/jpostal/${{ matrix.systemIdentifier }} otherResources/${{ matrix.systemIdentifier }}/
+          cp -r build/libs/jpostal/${{ matrix.systemIdentifier }} otherResources/${{ matrix.systemIdentifier }}/
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
