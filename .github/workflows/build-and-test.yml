@@ -87,6 +87,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     steps:
+      # install and build libpostal
+      # This is needed for the linking step of the jpostal build
+      - uses: actions/checkout@v4
+        with:
+          repository: james-willis/libpostal
+          ref: fix-aarch64
+          path: libpostal
+      - name: Install libtool
+        run: |
+          cd libpostal
+          ./bootstrap.sh
+          mkdir data_dir
+          ./configure --datadir=`pwd`/data_dir MODEL=senzing
+          sudo make -j4
+          sudo make install
+          sudo ldconfig
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
