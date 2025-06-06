@@ -71,7 +71,7 @@ jobs:
           fi
           cd jpostal
           ./gradlew assemble check --info
-          cp -r build/libs/jpostal/${{ matrix.systemIdentifier }} otherResources/${{ matrix.systemIdentifier }}/
+          cp -r build/libs/jpostal/${{ matrix.systemIdentifier }} otherResources/
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
