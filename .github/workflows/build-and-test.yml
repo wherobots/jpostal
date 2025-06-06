@@ -75,7 +75,6 @@ jobs:
             cp libpostal/${{ matrix.systemIdentifier }}/libpostal.so jpostal/otherResources/${{ matrix.systemIdentifier }}/
           fi
           cd jpostal
-          tree
           ./gradlew assemble check --info
       - name: Get jpostal Version from Gradle
         run: |
