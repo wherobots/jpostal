@@ -66,8 +66,14 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Run tests with Gradle Wrapper
         run: |
-          mkdir jpostal/otherResources/
-          cp libpostal/${{ matrix.systemIdentifier }}/libpostal.* jpostal/otherResources/
+          mkdir -p jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          if [[ "${{ matrix.systemIdentifier }}" == *darwin* ]]; then
+            cp libpostal/${{ matrix.systemIdentifier }}/libpostal.dylib jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          elif [[ "${{ matrix.systemIdentifier }}" == *windows* ]]; then
+            cp libpostal/${{ matrix.systemIdentifier }}/libpostal.dll jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          else
+            cp libpostal/${{ matrix.systemIdentifier }}/libpostal.so jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          fi
           cd jpostal
           tree
           ./gradlew assemble check --info
