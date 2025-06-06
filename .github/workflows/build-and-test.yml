@@ -64,7 +64,7 @@ jobs:
           path: jpostal
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-      - name: Run tests with Gradle Wrapper
+      - name: Run Tests and Bundle Libraries
         run: |
           mkdir -p jpostal/otherResources/${{ matrix.systemIdentifier }}/
           if [[ "${{ matrix.systemIdentifier }}" == *darwin* ]]; then
@@ -76,37 +76,22 @@ jobs:
           fi
           cd jpostal
           ./gradlew assemble check --info
+          cp jpostal/build/libs/jpostal/** otherResources/${{ matrix.systemIdentifier }}/
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      # upload artifacts
       - name: Upload native code
         uses: actions/upload-artifact@v4
         with:
           name: jpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
-          path: jpostal/build/libs/jpostal/**
+          path: jpostal/otherResources/**
 
   build-multiplatform-jar:
 
     runs-on: ubuntu-latest
     needs: build-and-test
     steps:
-      # install and build libpostal
-      - uses: actions/checkout@v4
-        with:
-          repository: james-willis/libpostal
-          ref: fix-aarch64
-          path: libpostal
-      - name: Install libtool
-        run: |
-          cd libpostal
-          ./bootstrap.sh
-          mkdir data_dir
-          ./configure --datadir=`pwd`/data_dir MODEL=senzing
-          sudo make -j4
-          sudo make install
-          sudo ldconfig
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
