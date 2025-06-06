@@ -43,11 +43,6 @@ jobs:
           sudo make install
           mkdir ${{ matrix.systemIdentifier }}/
           cp src/.libs/libpostal.*  ${{ matrix.systemIdentifier }}/
-      - name: Upload libpostal artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: libpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
-          path: libpostal/${{ matrix.systemIdentifier }}/**
       - name: Run ldconfig
         if: contains(matrix.platform, 'ubuntu')
         run: sudo ldconfig
@@ -76,7 +71,7 @@ jobs:
           fi
           cd jpostal
           ./gradlew assemble check --info
-          cp jpostal/build/libs/jpostal/** otherResources/${{ matrix.systemIdentifier }}/
+          cp jpostal/build/libs/jpostal/${{ matrix.systemIdentifier }} otherResources/${{ matrix.systemIdentifier }}/
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
