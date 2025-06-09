@@ -20,6 +20,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       # install and build libpostal
+      # TODO replace builds with prebuilt libpostal binaries
       - name: Set up Homebrew
         if: contains(matrix.platform, 'macos')
         id: set-up-homebrew
@@ -32,7 +33,7 @@ jobs:
           repository: james-willis/libpostal
           ref: fix-aarch64
           path: libpostal
-      - name: Install libtool
+      - name: Install libpostal
         run: |
           cd libpostal
           ./bootstrap.sh
@@ -40,7 +41,8 @@ jobs:
           ./configure --datadir=`pwd`/data_dir MODEL=senzing
           sudo make -j4
           sudo make install
-
+          mkdir ${{ matrix.systemIdentifier }}/
+          cp src/.libs/libpostal.*  ${{ matrix.systemIdentifier }}/
       - name: Run ldconfig
         if: contains(matrix.platform, 'ubuntu')
         run: sudo ldconfig
@@ -57,20 +59,28 @@ jobs:
           path: jpostal
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-      - name: Run tests with Gradle Wrapper
+      - name: Run Tests and Bundle Libraries
         run: |
+          mkdir -p jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          if [[ "${{ matrix.systemIdentifier }}" == *darwin* ]]; then
+            cp libpostal/${{ matrix.systemIdentifier }}/libpostal.dylib jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          elif [[ "${{ matrix.systemIdentifier }}" == *windows* ]]; then
+            cp libpostal/${{ matrix.systemIdentifier }}/libpostal.dll jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          else
+            cp libpostal/${{ matrix.systemIdentifier }}/libpostal.so jpostal/otherResources/${{ matrix.systemIdentifier }}/
+          fi
           cd jpostal
           ./gradlew assemble check --info
+          cp -r build/libs/jpostal/${{ matrix.systemIdentifier }} otherResources/
       - name: Get jpostal Version from Gradle
         run: |
           VERSION=$(grep '^version' jpostal/build.gradle | awk -F\' '{print $2}')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-      # upload artifacts
       - name: Upload native code
         uses: actions/upload-artifact@v4
         with:
           name: jpostal-${{ env.VERSION }}-${{ matrix.systemIdentifier }}
-          path: jpostal/build/libs/jpostal/**
+          path: jpostal/otherResources/**
 
   build-multiplatform-jar:
 
@@ -78,17 +88,18 @@ jobs:
     needs: build-and-test
     steps:
       # install and build libpostal
+      # This is needed for the linking step of the jpostal build
       - uses: actions/checkout@v4
         with:
           repository: james-willis/libpostal
           ref: fix-aarch64
           path: libpostal
-      - name: Install libtool
+      - name: Install libpostal
         run: |
           cd libpostal
           ./bootstrap.sh
           mkdir data_dir
-          ./configure --datadir=`pwd`/data_dir MODEL=senzing
+          ./configure --datadir=`pwd`/data_dir
           sudo make -j4
           sudo make install
           sudo ldconfig

@@ -13,17 +13,19 @@ jobs:
       contents: read
       packages: write
     steps:
+      # install and build libpostal
+      # This is needed for the linking step of the jpostal build
       - uses: actions/checkout@v4
         with:
           repository: james-willis/libpostal
           ref: fix-aarch64
           path: libpostal
-      - name: Install libtool
+      - name: Install libpostal
         run: |
           cd libpostal
           ./bootstrap.sh
           mkdir data_dir
-          ./configure --datadir=`pwd`/data_dir MODEL=senzing
+          ./configure --datadir=`pwd`/data_dir
           sudo make -j4
           sudo make install
           sudo ldconfig

@@ -8,7 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
 public final class Config {
-    private static boolean libLoaded = false;
+    private static boolean libsLoaded = false;
 
     private final String dataDir;
     private final String libraryFile;
@@ -31,12 +31,12 @@ public final class Config {
             System.load(this.libraryFile);
         } else {
             try {
-                System.loadLibrary("jpostal");
+                loadLibsFromJar();
             } catch (UnsatisfiedLinkError ex) {
-                loadLibraryFromJar("jpostal");
+                System.loadLibrary("jpostal");
             }
         }
-        libLoaded = true;
+        libsLoaded = true;
     }
 
     static IllegalArgumentException mismatchException(final Config current, final Config requested) {
@@ -86,7 +86,7 @@ public final class Config {
     }
 
     public static synchronized void loadLibraryFromJar(String libraryName) {
-        if (libLoaded) {
+        if (libsLoaded) {
             return;
         }
 
@@ -135,9 +135,18 @@ public final class Config {
             tempFile.deleteOnExit();
             Files.copy(in, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             System.load(tempFile.getAbsolutePath());
-            libLoaded = true;
         } catch (IOException e) {
             throw new UnsatisfiedLinkError("Failed to load native library " + libraryName + ": " + e.getMessage());
         }
+    }
+
+    private static synchronized void loadLibsFromJar() {
+        if (libsLoaded) {
+            return;
+        }
+        // both should be present in the JAR
+        loadLibraryFromJar("postal");
+        loadLibraryFromJar("jpostal");
+        libsLoaded = true;
     }
 }
