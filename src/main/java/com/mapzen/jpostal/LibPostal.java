@@ -65,10 +65,10 @@ final class LibPostal {
      * Closes the singleton instance, releasing native resources and allowing re-initialization.
      */
     public static void close() {
-        // Close dependent singletons first
-        AddressParser._close();
-        AddressExpander._close();
         synchronized (LibPostal.class) {
+            // Close dependent singletons first
+            AddressParser._close();
+            AddressExpander._close();
             if (instance != null) {
                 teardown();
                 instance = null;
