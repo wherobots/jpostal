@@ -30,6 +30,17 @@ final class LibPostal {
 
     private volatile static LibPostal instance = null;
 
+    static LibPostal getInstance() {
+        if (instance == null) {
+            synchronized(LibPostal.class) {
+                if (instance == null) {
+                    instance = new LibPostal(Config.builder().build());
+                }
+            }
+        }
+        return instance;
+    }
+
     static LibPostal getInstance(final Config config) {
        if (instance == null) {
             synchronized(LibPostal.class) {
