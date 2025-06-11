@@ -77,4 +77,20 @@ public class AddressExpander {
             teardown();
         }
     }
+
+    /**
+     * Closes the singleton instances of LibPostal, AddressParser, and AddressExpander, releasing native resources and allowing re-initialization.
+     */
+    public static void close() {
+        LibPostal.close();
+    }
+
+    public static void _close() {
+        synchronized (AddressExpander.class) {
+            if (instance != null) {
+                teardown();
+                instance = null;
+            }
+        }
+    }
 }

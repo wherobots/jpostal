@@ -30,6 +30,9 @@ final class LibPostal {
 
     private volatile static LibPostal instance = null;
 
+    /**
+     * Returns the singleton instance, creating it if necessary.
+     */
     static LibPostal getInstance() {
         if (instance == null) {
             synchronized(LibPostal.class) {
@@ -41,6 +44,10 @@ final class LibPostal {
         return instance;
     }
 
+    /**
+     * Returns the singleton instance with a specific config, creating it if necessary.
+     * Throws if the config does not match the existing instance.
+     */
     static LibPostal getInstance(final Config config) {
        if (instance == null) {
             synchronized(LibPostal.class) {
@@ -52,6 +59,21 @@ final class LibPostal {
            throw Config.mismatchException(instance.config, config);
        }
        return instance;
+    }
+
+    /**
+     * Closes the singleton instance, releasing native resources and allowing re-initialization.
+     */
+    public static void close() {
+        // Close dependent singletons first
+        AddressParser._close();
+        AddressExpander._close();
+        synchronized (LibPostal.class) {
+            if (instance != null) {
+                teardown();
+                instance = null;
+            }
+        }
     }
 
     @Override
