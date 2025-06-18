@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     testImplementation 'junit:junit:4.+'
+    implementation 'org.apache.commons:commons-compress:1.26.2'
 }
 
 sourceSets.main.java.srcDirs = ["src/main/java"]

@@ -12,10 +12,14 @@ public final class Config {
 
     private final String dataDir;
     private final String libraryFile;
+    private final Boolean downloadDataIfNeeded;
+    private final Boolean senzing;
 
-    private Config(final String dataDir, final String libraryFile) {
+    private Config(final String dataDir, final String libraryFile, boolean downloadDataIfNeeded, boolean senzing) {
         this.dataDir = dataDir;
         this.libraryFile = libraryFile;
+        this.downloadDataIfNeeded = downloadDataIfNeeded;
+        this.senzing = senzing;
     }
 
     public String getDataDir() {
@@ -24,6 +28,14 @@ public final class Config {
 
     public String getLibraryFile() {
         return libraryFile;
+    }
+
+    public Boolean getDownloadDataIfNeeded() {
+        return downloadDataIfNeeded;
+    }
+
+    public Boolean getSenzing() {
+        return senzing;
     }
 
     void loadLibrary() {
@@ -67,11 +79,13 @@ public final class Config {
     public static class Builder {
         private String dataDir;
         private String libraryFile;
+        private boolean downloadDataIfNeeded = false;
+        private boolean senzing = false;
 
         private Builder() {}
 
         public Config build() {
-            return new Config(dataDir, libraryFile);
+            return new Config(dataDir, libraryFile, downloadDataIfNeeded, senzing);
         }
 
         public Builder dataDir(final String dataDir) {
@@ -81,6 +95,16 @@ public final class Config {
 
         public Builder libraryFile(final String libraryFile) {
             this.libraryFile = libraryFile;
+            return this;
+        }
+
+        public Builder downloadDataIfNeeded(final boolean downloadDataIfNeeded) {
+            this.downloadDataIfNeeded = downloadDataIfNeeded;
+            return this;
+        }
+
+        public Builder senzing(final boolean senzing) {
+            this.senzing = senzing;
             return this;
         }
     }
