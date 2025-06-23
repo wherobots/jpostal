@@ -1,4 +1,5 @@
 package com.mapzen.jpostal;
+import static com.mapzen.jpostal.DataDownloadUtils.isDataDirPopulated;
 
 final class LibPostal {
     private final Config config;
@@ -52,6 +53,9 @@ final class LibPostal {
        if (instance == null) {
             synchronized(LibPostal.class) {
                 if (instance == null ) {
+                    if (config.getDownloadDataIfNeeded() && !isDataDirPopulated(config.getDataDir())) {
+                        DataDownloadUtils.populateDataDir(config.getDataDir(), config.getSenzing());
+                    }
                     instance = new LibPostal(config);
                 }
             }
@@ -63,6 +67,7 @@ final class LibPostal {
 
     /**
      * Closes the singleton instance, releasing native resources and allowing re-initialization.
+     * This is not thread-safe. Use with caution.
      */
     public static void close() {
         // Close dependent singletons first
