@@ -40,7 +40,7 @@ public class DataDownloadUtils {
             versionUrlParam = "/v1.1.0/";
         } else {
             originUrl = "https://github.com/openvenues/libpostal/releases/download";
-            versionUrlParam = "/v1.0.0/"; // for some reason, v1.1.0 doesnt exist in the GitHub releases
+            versionUrlParam = "/v1.0.0/"; // for some reason, v1.1.0 doesn't exist in the GitHub releases
         }
 
         Path dataDir = Paths.get(dst);
