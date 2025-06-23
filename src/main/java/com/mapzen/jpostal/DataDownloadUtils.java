@@ -37,7 +37,7 @@ public class DataDownloadUtils {
         String versionUrlParam;
         if (senzing) {
             originUrl = "https://public-read-libpostal-data.s3.amazonaws.com";
-            versionUrlParam = "/v1.1.0/"; //s enzing doesnt use versions in download URLs
+            versionUrlParam = "/v1.1.0/";
         } else {
             originUrl = "https://github.com/openvenues/libpostal/releases/download";
             versionUrlParam = "/v1.0.0/"; // for some reason, v1.1.0 doesnt exist in the GitHub releases
