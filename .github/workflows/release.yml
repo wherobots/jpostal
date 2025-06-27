@@ -17,7 +17,7 @@ jobs:
       # This is needed for the linking step of the jpostal build
       - uses: actions/checkout@v4
         with:
-          repository: james-willis/libpostal
+          repository: openvenues/libpostal
           ref: fix-aarch64
           path: libpostal
       - name: Install libpostal
