@@ -31,7 +31,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: openvenues/libpostal
-          ref: fix-aarch64
           path: libpostal
       - name: Install libpostal
         run: |
@@ -92,7 +91,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: openvenues/libpostal
-          ref: fix-aarch64
           path: libpostal
       - name: Install libpostal
         run: |
