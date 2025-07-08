@@ -8,7 +8,7 @@ plugins {
 }
 
 // The latest release is 1.1.0, but there are many unreleased changes in the master branch
-version = '1.2.0'
+version = '1.2.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
