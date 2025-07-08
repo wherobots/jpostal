@@ -4,10 +4,11 @@ import com.mapzen.jpostal.ParsedComponent;
 import com.mapzen.jpostal.ParserOptions;
 
 public class AddressParser {
-    private static native void setup();
-    private static native void setupDataDir(String dataDir);
-    private native ParsedComponent[] libpostalParse(String address, ParserOptions options);
-    private static native void teardown();
+
+    private static native synchronized void setup();
+    private static native synchronized void setupDataDir(String dataDir);
+    private native synchronized ParsedComponent[] libpostalParse(byte[] address, ParserOptions options);
+    private static native synchronized void teardown();
 
     private volatile static AddressParser instance = null;
 
@@ -49,10 +50,7 @@ public class AddressParser {
         if (options == null) {
             throw new NullPointerException("ParserOptions options must not be null");
         }
-
-        synchronized(AddressParser.class) {
-            return libpostalParse(address, options);
-        }
+        return libpostalParse(address.getBytes(), options);
     } 
 
     AddressParser(final LibPostal libPostal) {

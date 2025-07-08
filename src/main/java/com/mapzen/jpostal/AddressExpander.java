@@ -2,7 +2,15 @@ package com.mapzen.jpostal;
 
 import com.mapzen.jpostal.ExpanderOptions;
 
+import java.nio.charset.StandardCharsets;
+
 public class AddressExpander {
+
+    private static native synchronized void setup();
+    private static native synchronized void setupDataDir(String dataDir);
+    private static native synchronized byte[][] libpostalExpand(byte[] address, ExpanderOptions options);
+    private static native synchronized void teardown();
+
     private volatile static AddressExpander instance = null;
 
     private final LibPostal libPostal;
@@ -13,7 +21,7 @@ public class AddressExpander {
 
     public static AddressExpander getInstanceConfig(Config config) {
         if (instance == null) {
-            synchronized(AddressParser.class) {
+            synchronized(AddressExpander.class) {
                 if (instance == null) {
                     instance = new AddressExpander(LibPostal.getInstance(config));
                 }
@@ -32,11 +40,6 @@ public class AddressExpander {
         return instance != null;
     }
 
-    private static native void setup();
-    private static native void setupDataDir(String dataDir);
-    private static native String[] libpostalExpand(String address, ExpanderOptions options);
-    private static native void teardown();
-
     public String[] expandAddress(String address) {
         return expandAddressWithOptions(address, new ExpanderOptions.Builder().build());
     }
@@ -49,9 +52,12 @@ public class AddressExpander {
             throw new NullPointerException("ExpanderOptions options must not be null");
         }
 
-        synchronized(AddressExpander.class) {
-            return libpostalExpand(address, options);
+        byte[][] expansionBytes = libpostalExpand(address.getBytes(), options);
+        String[] expansions = new String[expansionBytes.length];
+        for (int i = 0; i < expansionBytes.length; i++) {
+            expansions[i] = new String(expansionBytes[i], StandardCharsets.UTF_8);
         }
+        return expansions;
     }
 
     AddressExpander(final LibPostal libPostal) {
