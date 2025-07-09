@@ -5,10 +5,11 @@ plugins {
     id 'java'
     id 'application'
     id 'maven-publish'
+    id 'org.jreleaser' version '1.19.0'
 }
 
-// The latest libpostal release is 1.1.0, but there are many unreleased changes in the master branch
-version = '1.2.1'
+group = 'com.wherobots'
+version = '1.2.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -111,7 +112,6 @@ jar {
 }
 
 
-
 java {
     withJavadocJar()
     withSourcesJar()
@@ -122,12 +122,10 @@ sourcesJar.duplicatesStrategy DuplicatesStrategy.EXCLUDE
 // Configure publishing
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            groupId = 'com.wherobots'
+        maven(MavenPublication) {
             artifactId = 'jpostal'
-            version = project.version
+
+            from components.java
 
             pom {
                 name = 'jpostal'
@@ -146,7 +144,7 @@ publishing {
                     developer {
                         id = 'james-willis'
                         name = 'James Willis'
-                        email = 'james@herobots.com'
+                        email = 'james@wherobots.com'
                     }
                 }
 
@@ -161,11 +159,35 @@ publishing {
 
     repositories {
         maven {
-            name = "WherobotsGithubPackages"
-            url = "https://maven.pkg.github.com/wherobots/packages"
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME") || ""
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                'release-deploy' {
+                    active = 'RELEASE'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+            nexus2 {
+                'snapshot-deploy' {
+                    active = 'SNAPSHOT'
+                    snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                    applyMavenCentralRules = true
+                    snapshotSupported = true
+                    closeRepository = true
+                    releaseRepository = true
+                    stagingRepository('build/staging-deploy')
+                }
             }
         }
     }
