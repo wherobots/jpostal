@@ -64,9 +64,10 @@ public final class Config {
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
-        } else if (!(o instanceof Config other)) {
+        } else if (!(o instanceof Config)) {
             return false;
         } else {
+            Config other = (Config) o;
             return Objects.equals(this.dataDir, other.dataDir) &&
                     Objects.equals(this.libraryFile, other.libraryFile);
         }
