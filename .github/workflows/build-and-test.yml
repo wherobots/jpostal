@@ -51,7 +51,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 17 # Java 16+ is required for jpostal
+          java-version: 11
 
       # install & build jpostal
       - name: Checkout jpostal
