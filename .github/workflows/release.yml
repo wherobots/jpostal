@@ -47,6 +47,8 @@ jobs:
       - name: Download libs
         uses: actions/download-artifact@v4
         with:
+          # Skip the jpostal-<version>-all artifact or it will be included in the release jar (again)
+          pattern: jpostal-${{ env.VERSION }}-{linux,darwin}-*
           path: ./jpostal/otherResources
       - name: Flatten Native Lib Files
         run: |
